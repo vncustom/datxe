@@ -20,9 +20,13 @@
     "db:pg:push": "node scripts/pg-schema.mjs && prisma db push --schema prisma/schema.postgres.prisma",
     "db:pg:reset": "node scripts/pg-schema.mjs && prisma db push --force-reset --schema prisma/schema.postgres.prisma && npm run db:pg:seed",
     "db:pg:seed": "node scripts/pg-schema.mjs && prisma generate --schema prisma/schema.postgres.prisma && tsx prisma/seed.ts",
+    "db:pg:seed:demo": "node scripts/pg-schema.mjs && prisma generate --schema prisma/schema.postgres.prisma && tsx scripts/seed-demo.mts",
+    "db:purge": "node scripts/purge-bookings.mjs",
+    "db:pg:purge": "node scripts/purge-bookings.mjs --cloud",
     "import:users": "python scripts/import_users.py",
     "sync": "node sync/daemon.mjs",
     "sync:once": "node sync/daemon.mjs --once",
+    "sync:reset": "node scripts/sync-reset.mjs",
     "sync:test": "node scripts/gen-test-schema.mjs && node sync/test/roundtrip.mjs",
     "typecheck": "tsc --noEmit"
   },

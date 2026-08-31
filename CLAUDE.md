@@ -82,8 +82,14 @@ npm run db:seed:demo   # ~9 đơn mẫu để xem thử luồng (createdBy = __d
 npm run db:studio      # Prisma Studio
 npm run db:pg:push     # đẩy schema lên Postgres (cần DATABASE_URL/DIRECT_URL trỏ Supabase, cổng 5432)
 npm run db:pg:seed     # seed lên Postgres
+npm run db:generate    # sinh lại client Prisma theo DATABASE_URL (sửa khi kẹt ở chế độ PG)
+npm run sync           # daemon đồng bộ (sync:once = 1 vòng; sync:reset = xoá watermark)
+npm run db:purge       # xoá dữ liệu giao dịch, GIỮ users + vehicles (db:pg:purge cho cloud)
 npm run typecheck      # tsc --noEmit
 ```
+
+Vận hành hằng ngày (chuyển máy, sửa user, sync tay, reset trước go-live, set số km xe):
+**`docs/van-hanh.md`**.
 
 ## Lưu ý
 
