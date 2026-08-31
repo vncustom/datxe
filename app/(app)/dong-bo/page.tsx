@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireSession } from "@/lib/auth";
-import { isDoiXe, isAdmin } from "@/lib/rbac";
+import { isAdmin } from "@/lib/rbac";
 import { fmtDateTime } from "@/lib/tz";
 import { getSyncStatus, agoText } from "@/lib/sync-status";
 
@@ -8,10 +8,10 @@ const ORIGIN = process.env.ORIGIN_NODE === "cloud" ? "cloud" : "local";
 
 export default async function DongBoPage() {
   const s = await requireSession();
-  if (!(isDoiXe(s) || isAdmin(s))) {
+  if (!isAdmin(s)) {
     return (
       <p className="text-sm text-muted">
-        Trang này dành cho Đội xe và Quản trị.
+        Trang này chỉ dành cho Quản trị.
       </p>
     );
   }

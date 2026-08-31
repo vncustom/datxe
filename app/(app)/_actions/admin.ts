@@ -36,6 +36,7 @@ const ROLES = [
   "to_pho",
   "ban_tgd",
   "admin",
+  "admin_datxe",
 ];
 
 export async function saveUserAction(

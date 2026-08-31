@@ -22,7 +22,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     nav.push({ href: "/cong-to-met", label: "Công-tơ-mét" });
     nav.push({ href: "/thong-ke", label: "Thống kê" });
   }
-  if (isDoiXe(s) || isAdmin(s)) nav.push({ href: "/dong-bo", label: "Đồng bộ" });
+  if (isAdmin(s)) nav.push({ href: "/dong-bo", label: "Đồng bộ" });
   if (isAdmin(s)) nav.push({ href: "/quan-tri", label: "Quản trị" });
 
   return (

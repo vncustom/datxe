@@ -53,7 +53,7 @@ npm run sync          # chạy liên tục (Ctrl+C để dừng)
 Log mỗi vòng: `đẩy=<n> kéo=<n> xung_đột=<n>`.
 
 Kiểm tra hội tụ: sửa 1 đơn trên bản Vercel → sau ~20 giây thấy thay đổi ở bản
-nội bộ, và ngược lại. Xem tổng quan ở trang **Đồng bộ** (`/dong-bo`, cho Đội xe / admin).
+nội bộ, và ngược lại. Xem tổng quan ở trang **Đồng bộ** (`/dong-bo`, chỉ `admin` / `admin_datxe`).
 
 ## 4. Chạy nền khi khởi động Windows
 

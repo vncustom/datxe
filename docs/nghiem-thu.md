@@ -13,8 +13,8 @@
 
 - [ ] `laixe1` đăng nhập → thấy menu **Lịch xe, Chuyến của tôi, Đơn của tôi**, không thấy Duyệt/Điều xe/Quản trị
 - [ ] `machithong` (Phó ban TT Tin Tức) → thấy thêm **Duyệt đơn**
-- [ ] `huynhvantuan` (Tổ trưởng Đội xe) → thấy **Điều xe, Công-tơ-mét, Thống kê, Đồng bộ**
-- [ ] `admin` → thấy **Quản trị**
+- [ ] `huynhvantuan` (Tổ trưởng Đội xe) → thấy **Điều xe, Công-tơ-mét, Thống kê**; KHÔNG thấy **Đồng bộ**
+- [ ] `admin` / `admin_datxe` → thấy **Quản trị** và **Đồng bộ**
 - [ ] Sai mật khẩu → báo lỗi, không vào được
 - [ ] User bị "khoá" trong Quản trị → không đăng nhập được
 

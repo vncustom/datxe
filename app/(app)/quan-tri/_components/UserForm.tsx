@@ -18,6 +18,7 @@ const ROLE_OPTS: [string, string][] = [
   ["to_pho", "Tổ phó Đội xe"],
   ["ban_tgd", "Ban Tổng Giám đốc"],
   ["admin", "Quản trị"],
+  ["admin_datxe", "Quản trị (datxe)"],
 ];
 
 type U = {

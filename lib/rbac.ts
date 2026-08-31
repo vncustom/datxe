@@ -12,6 +12,7 @@ export const ROLE_LABEL: Record<string, string> = {
   to_pho: "Tổ phó Đội xe",
   ban_tgd: "Ban Tổng Giám đốc",
   admin: "Quản trị",
+  admin_datxe: "Quản trị (datxe)",
 };
 
 export function roleLabel(role: string): string {
@@ -33,8 +34,9 @@ export function isVpDaiLeader(s: Session): boolean {
   return isBanLeader(s) && s.dsBan === VP_DAI;
 }
 
+/** Quản trị hệ thống. `admin_datxe` là biến thể có toàn quyền như `admin`. */
 export function isAdmin(s: Session): boolean {
-  return s.role === "admin";
+  return s.role === "admin" || s.role === "admin_datxe";
 }
 
 export function isLanhDaoDai(s: Session): boolean {

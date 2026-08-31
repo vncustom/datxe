@@ -1,4 +1,4 @@
-# Cẩm nang vận hành — 6 câu hỏi thường gặp
+# Cẩm nang vận hành — 7 câu hỏi thường gặp
 
 Áp dụng cho: bản nội bộ (SQLite) + bản cloud (Vercel/Supabase) + daemon đồng bộ.
 
@@ -136,7 +136,7 @@ npm run sync:once     # quét lại toàn bộ theo updatedAt, LWW tự hội t�
 An toàn: `sync_state` chỉ là "đã xử lý tới đâu", xoá đi thì lần sau quét lại hết.
 
 ### Kiểm tra tình trạng
-Trang **Đồng bộ** (`/dong-bo`, đăng nhập Đội xe/admin): "Đồng bộ lần cuối", lịch sử vòng
+Trang **Đồng bộ** (`/dong-bo`, chỉ `admin` / `admin_datxe`): "Đồng bộ lần cuối", lịch sử vòng
 chạy, số xung đột, watermark từng bảng.
 
 ---
@@ -234,3 +234,101 @@ Hoặc nhờ Tổ trưởng/Tổ phó Đội xe: **Công-tơ-mét → cột "S�
   số này (form điền sẵn). Từ đó hệ thống tự nối chuỗi công-tơ-mét và bắt đầu phát hiện
   km chạy ngoài đơn.
 - Việc chỉnh số km cũng được ghi vào nhật ký (`audit_log`).
+
+---
+
+## 7. Chèn user thủ công & Xoá sạch toàn bộ bảng
+
+> Trước khi đụng thẳng vào CSDL: **dừng web + daemon** (`Ctrl+C` ở cả 2 cửa sổ).
+> Sau mỗi phiên có set `$env:DATABASE_URL` trỏ Postgres, chạy `npm run db:generate`
+> để client Prisma cục bộ quay lại SQLite.
+
+### 7.1. Chèn 1 user (vd `adminxe` / `admin_datxe`) vào **dev.db** (local)
+
+**Cách nhanh nhất — không cần lệnh:** `npm run db:studio` → mở bảng `users` → *Add record*
+→ điền `username`, `fullName`, `role`, `passwordHash` (một chuỗi bcrypt hợp lệ — lấy bằng
+`node -e "console.log(require('bcryptjs').hashSync('123456',10))"`) → Save. Hoặc đăng nhập
+`admin` → **Quản trị → + Thêm người dùng** (tự hash mật khẩu `123456`, tự sinh id).
+
+**Cách có script (khuyến nghị, chạy lại được):**
+```powershell
+npx tsx scripts/them-user.mts adminxe "admin_datxe" admin_datxe
+```
+Cú pháp: `npx tsx scripts/them-user.mts <username> "<Họ tên>" [role]`.
+Script `scripts/them-user.mts` **upsert theo username**: id sinh tất định (`idFor.user`),
+mật khẩu khởi tạo `123456` (không đổi nếu user đã có), `isActive = true`, `originNode` theo
+`ORIGIN_NODE` (mặc định `local`). role hợp lệ: `nhan_vien` · `truong_ban` · `pho_ban` ·
+`truong_phong` · `pho_phong` · `to_truong` · `to_pho` · `ban_tgd` · `admin` · `admin_datxe`
+(`admin_datxe` toàn quyền như `admin`).
+
+> **Không cần chèn thủ công ở cả 2 bên.** `users` là bảng đồng bộ, id tất định — chèn 1 bên
+> rồi `npm run sync:once`, daemon đẩy sang bên kia.
+
+### 7.2. Cũng user đó nhưng làm ở **Supabase**
+
+**Cách 1 — để daemon lo (khuyến nghị):** làm bước 7.1 ở local, rồi:
+```powershell
+npm run sync:once      # đẩy adminxe lên Supabase
+```
+
+**Cách 2 — chạy thẳng script trên Postgres** (khi cần có ngay, không qua daemon):
+```powershell
+node scripts/pg-schema.mjs
+npx prisma generate --schema prisma/schema.postgres.prisma
+$env:DATABASE_URL="<chuỗi Session pooler 5432>"; $env:DIRECT_URL=$env:DATABASE_URL; $env:ORIGIN_NODE="cloud"
+npx tsx scripts/them-user.mts adminxe "admin_datxe" admin_datxe
+Remove-Item Env:DATABASE_URL, Env:DIRECT_URL, Env:ORIGIN_NODE
+npm run db:generate    # client Prisma cục bộ về lại SQLite
+```
+
+**Cách 3 — SQL tay trên Supabase** (SQL Editor trên trang supabase.com): cần id tất định
+`35f79782-c623-5497-8868-05a3ff6badd1` (chính là uuidv5 của chuỗi `user:adminxe`) và một
+chuỗi bcrypt của `123456`:
+```sql
+INSERT INTO users (id, username, "fullName", role, "passwordHash", "isDriver", "isActive", "createdAt", "updatedAt", "originNode")
+VALUES ('35f79782-c623-5497-8868-05a3ff6badd1', 'adminxe', 'admin_datxe', 'admin_datxe', '<chuỗi-bcrypt>', false, true, now(), now(), 'cloud')
+ON CONFLICT (id) DO UPDATE SET "fullName" = EXCLUDED."fullName", role = EXCLUDED.role, "updatedAt" = now();
+```
+> Dùng **cùng id** như local thì lần sync sau 2 bên khớp nhau, không tạo user trùng.
+
+### 7.3. Xoá sạch **mọi bảng** trong dev.db (local)
+
+`npm run db:purge` chỉ xoá đơn/chuyến, **giữ** `users` + `vehicles` (xem mục 5). Muốn xoá
+sạch **tất cả 12 bảng**:
+
+```powershell
+npx prisma migrate reset --force --skip-seed     # DROP + tạo lại schema rỗng, KHÔNG seed
+```
+- Bỏ `--skip-seed` nếu muốn seed lại 366 user + 4 xe ngay (`npm run db:reset`).
+- Hoặc xoá hẳn file rồi dựng lại: `Remove-Item prisma/dev.db; npm run db:migrate`.
+
+Sau khi xoá:
+```powershell
+npm run sync:reset      # bỏ mốc đồng bộ
+```
+> ⚠ Xoá cứng **không** đồng bộ. Nếu chỉ xoá local rồi `sync:once`, daemon sẽ **kéo lại
+> toàn bộ** dữ liệu từ Supabase về. Muốn trống thật sự cả 2 bên → xoá **cả 2 bên** (7.3 +
+> 7.4) rồi mới `sync:reset` + `sync:once`.
+
+### 7.4. Xoá sạch **mọi bảng** trên Supabase
+
+```powershell
+node scripts/pg-schema.mjs
+$env:DATABASE_URL="<chuỗi 5432>"; $env:DIRECT_URL=$env:DATABASE_URL
+npx prisma db push --force-reset --schema prisma/schema.postgres.prisma   # DROP tất cả + schema rỗng, KHÔNG seed
+Remove-Item Env:DATABASE_URL, Env:DIRECT_URL
+npm run db:generate
+```
+- Thêm seed lại 366 user + 4 xe: dùng `npm run db:pg:reset` thay cho lệnh `db push` ở trên.
+- Chỉ muốn **xoá dòng, giữ cấu trúc** (không DROP): chạy trong **SQL Editor** của Supabase:
+  ```sql
+  TRUNCATE users, vehicles, bookings, booking_approvals, booking_dispatch,
+           trip_logs, odometer_events, alert_acks, audit_log,
+           sync_run, sync_conflict_log, sync_state RESTART IDENTITY CASCADE;
+  ```
+
+Sau khi xoá cả 2 bên:
+```powershell
+npm run sync:reset
+npm run sync:once      # 2 bên cùng trống -> đẩy=0 kéo=0
+```

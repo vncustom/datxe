@@ -13,8 +13,9 @@ Kế hoạch đầy đủ: xem `docs/ke-hoach.md` (bản artifact) — dưới �
 
 ## Vai trò (`User.role`)
 
-`nhan_vien` · `truong_ban` · `pho_ban` · `truong_phong` · `pho_phong` · `to_truong` · `to_pho` · `ban_tgd` · `admin`.
+`nhan_vien` · `truong_ban` · `pho_ban` · `truong_phong` · `pho_phong` · `to_truong` · `to_pho` · `ban_tgd` · `admin` · `admin_datxe`.
 Lái xe = `role: nhan_vien` + `isDriver: true` (`laixe1`–`laixe4`).
+`admin_datxe` = biến thể quản trị, `isAdmin()` coi ngang `admin` (toàn quyền `/quan-tri`, `/dong-bo`, thống kê).
 
 - **Duyệt đơn**: chỉ `truong_ban` / `pho_ban` cùng `dsBan` với người tạo. Trưởng/phó phòng KHÔNG duyệt.
 - **Điều xe**: `to_truong` / `to_pho` (Đội xe, thuộc "Văn Phòng Đài").
