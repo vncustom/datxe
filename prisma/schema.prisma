@@ -1,0 +1,275 @@
+// Datxe — Hệ thống Đặt xe Công tác HTV
+// Schema dùng cho bản LOCAL (SQLite). Bản CLOUD (PostgreSQL/Supabase) sẽ dùng
+// một datasource block khác ở giai đoạn M4/M5; giữ kiểu dữ liệu trung tính,
+// không dùng enum (SQLite không hỗ trợ) và không dùng native type attribute.
+//
+// Quy ước đồng bộ: mọi bảng đồng bộ có id (uuid), updatedAt, updatedBy,
+// originNode ("local" | "cloud"), deletedAt (xoá mềm / tombstone).
+// Quan hệ tới User tham chiếu theo `username` để ổn định khi đồng bộ 2 DB.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Người dùng — nguồn từ file "Danh sách_user.xlsx", đồng bộ theo username.
+model User {
+  id           String  @id @default(uuid())
+  username     String  @unique
+  fullName     String
+  dsBan        String?
+  dsPhong      String?
+  dsTo         String?
+  role         String  @default("nhan_vien")
+  // nhan_vien | truong_ban | pho_ban | truong_phong | pho_phong
+  // | to_truong | to_pho | ban_tgd | admin
+  jobTitle     String?
+  email        String?
+  phone        String?
+  passwordHash String
+  isDriver     Boolean @default(false)
+  isActive     Boolean @default(true)
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  updatedBy  String?
+  originNode String    @default("local")
+  deletedAt  DateTime?
+
+  bookingsRequested Booking[]
+  approvals         BookingApproval[]
+  dispatchesMade    BookingDispatch[] @relation("dispatcher")
+  tripsAsDriver     BookingDispatch[] @relation("driver")
+  tripLogs          TripLog[]
+
+  @@index([dsBan])
+  @@index([role])
+  @@map("users")
+}
+
+/// Xe của Đội xe.
+model Vehicle {
+  id              String  @id @default(uuid())
+  name            String // nhãn hiệu + model, vd "Toyota Zace"
+  plateNo         String  @unique
+  seats           Int
+  currentOdometer Int     @default(0)
+  note            String?
+  isActive        Boolean @default(true)
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  updatedBy  String?
+  originNode String    @default("local")
+  deletedAt  DateTime?
+
+  dispatches     BookingDispatch[]
+  odometerEvents OdometerEvent[]
+
+  @@map("vehicles")
+}
+
+/// Đơn công tác — lõi. Do nhân viên tạo.
+model Booking {
+  id                String    @id @default(uuid())
+  code              String    @unique // vd HTV-L-2026-000123
+  requesterUsername String
+  requester         User      @relation(fields: [requesterUsername], references: [username])
+  donViYeuCau       String // snapshot ds_ban của người tạo
+  startTime         DateTime
+  endTime           DateTime?
+  diemXuatPhat      String    @default("HTV")
+  diemDen           String
+  noiDung           String
+  bienTap           String?
+  quayPhim          String?
+  soNguoi           Int?
+  isPhatSinh        Boolean   @default(false)
+  status            String    @default("cho_ban_duyet")
+  // nhap | cho_ban_duyet | ban_tu_choi | cho_doi_xe | doi_xe_tu_choi
+  // | da_dieu_xe | dang_chay | hoan_thanh | huy
+
+  createdAt  DateTime  @default(now())
+  createdBy  String?
+  updatedAt  DateTime  @updatedAt
+  updatedBy  String?
+  originNode String    @default("local")
+  deletedAt  DateTime?
+
+  approval BookingApproval?
+  dispatch BookingDispatch?
+  tripLog  TripLog?
+
+  @@index([status])
+  @@index([startTime])
+  @@index([donViYeuCau])
+  @@map("bookings")
+}
+
+/// Bước duyệt của Ban phụ trách. Do truong_ban / pho_ban cùng ds_ban ghi.
+model BookingApproval {
+  id              String   @id @default(uuid())
+  bookingId       String   @unique
+  booking         Booking  @relation(fields: [bookingId], references: [id])
+  approverUsername String
+  approver        User     @relation(fields: [approverUsername], references: [username])
+  quyetDinh       String // duyet | tu_choi
+  ghiChu          String?
+  decidedAt       DateTime @default(now())
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  updatedBy  String?
+  originNode String    @default("local")
+  deletedAt  DateTime?
+
+  @@map("booking_approvals")
+}
+
+/// Bước điều xe. Do Đội xe (to_truong / to_pho) ghi.
+model BookingDispatch {
+  id             String   @id @default(uuid())
+  bookingId      String   @unique
+  booking        Booking  @relation(fields: [bookingId], references: [id])
+  vehicleId      String
+  vehicle        Vehicle  @relation(fields: [vehicleId], references: [id])
+  driverUsername String
+  driver         User     @relation("driver", fields: [driverUsername], references: [username])
+  ghiChuDoiXe    String?
+  dispatchedBy   String
+  dispatcher     User     @relation("dispatcher", fields: [dispatchedBy], references: [username])
+  dispatchedAt   DateTime @default(now())
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  updatedBy  String?
+  originNode String    @default("local")
+  deletedAt  DateTime?
+
+  @@index([vehicleId])
+  @@index([driverUsername])
+  @@map("booking_dispatch")
+}
+
+/// Nhật ký chuyến / công-tơ-mét. Do lái xe ghi.
+model TripLog {
+  id             String    @id @default(uuid())
+  bookingId      String    @unique
+  booking        Booking   @relation(fields: [bookingId], references: [id])
+  driverUsername String
+  driver         User      @relation(fields: [driverUsername], references: [username])
+  odoStart       Int?
+  gioXuatBen     DateTime?
+  odoEnd         Int?
+  gioKetThuc     DateTime?
+  soKm           Int?
+  ghiChuLaiXe    String?
+  daDongChuyen   Boolean   @default(false)
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  updatedBy  String?
+  originNode String    @default("local")
+  deletedAt  DateTime?
+
+  @@map("trip_logs")
+}
+
+/// Sổ ghi mọi thay đổi công-tơ-mét để dò khoảng trống.
+model OdometerEvent {
+  id         String   @id @default(uuid())
+  vehicleId  String
+  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id])
+  bookingId  String?
+  loai       String // start | end | dieu_chinh
+  odoValue   Int
+  atTime     DateTime @default(now())
+  byUsername String?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  originNode String    @default("local")
+  deletedAt  DateTime?
+
+  @@index([vehicleId, atTime])
+  @@map("odometer_events")
+}
+
+/// Nhật ký thao tác (dùng cho các chỉnh sửa sau khi khoá số liệu).
+model AuditLog {
+  id         String   @id @default(uuid())
+  entity     String
+  entityId   String
+  action     String
+  byUsername String?
+  atTime     DateTime @default(now())
+  diff       String? // JSON
+  originNode String   @default("local")
+
+  @@index([entity, entityId])
+  @@map("audit_log")
+}
+
+/// Ghi nhận "Biết rồi" cho các cảnh báo (vd km chạy ngoài đơn) để không hiện lại.
+model AlertAck {
+  id      String  @id @default(uuid())
+  kind    String // "odo_gap"
+  refId   String // khoá cảnh báo (vd bookingId của chuyến sau)
+  ackedBy String
+  note    String?
+  ackedAt DateTime @default(now())
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  updatedBy  String?
+  originNode String    @default("local")
+  deletedAt  DateTime?
+
+  @@unique([kind, refId])
+  @@map("alert_acks")
+}
+
+// ----- Bảng phục vụ Sync Engine (không đồng bộ) -----
+
+model SyncRun {
+  id         String    @id @default(uuid())
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  direction  String // pull | push | full
+  tableName  String?
+  rowsPushed Int       @default(0)
+  rowsPulled Int       @default(0)
+  conflicts  Int       @default(0)
+  error      String?
+
+  @@map("sync_run")
+}
+
+model SyncConflictLog {
+  id              String    @id @default(uuid())
+  tableName       String
+  rowId           String
+  localUpdatedAt  DateTime?
+  remoteUpdatedAt DateTime?
+  winner          String // local | remote
+  losingPayload   String? // JSON
+  resolvedAt      DateTime  @default(now())
+
+  @@index([tableName, rowId])
+  @@map("sync_conflict_log")
+}
+
+model SyncState {
+  id        String    @id @default(uuid())
+  tableName String
+  direction String // pull | push
+  watermark DateTime?
+  updatedAt DateTime  @updatedAt
+
+  @@unique([tableName, direction])
+  @@map("sync_state")
+}
