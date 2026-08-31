@@ -29,7 +29,14 @@ const COOKIE_OPTS = {
   sameSite: "lax" as const,
   path: "/",
   maxAge: 60 * 60 * 24 * 30,
-  secure: process.env.NODE_ENV === "production",
+  // Bản local chạy `next start` (NODE_ENV=production) trên IP nội bộ qua HTTP.
+  // Cookie có Secure sẽ bị trình duyệt loại trên http://<IP-máy> (không phải
+  // secure context như localhost) -> mất session, văng ra /login mỗi lần chuyển
+  // trang. Chỉ đặt Secure khi chạy cloud (Vercel = HTTPS); cho phép ép qua
+  // COOKIE_SECURE=1/0 nếu về sau local có HTTPS.
+  secure: process.env.COOKIE_SECURE
+    ? process.env.COOKIE_SECURE === "1"
+    : !!process.env.VERCEL,
 };
 
 /** Trả về Session nếu đúng mật khẩu, ngược lại null. */
