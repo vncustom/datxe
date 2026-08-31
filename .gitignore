@@ -41,6 +41,10 @@ yarn-error.log*
 # generated seed data — chứa thông tin cá nhân; tạo lại bằng: npm run import:users
 /prisma/data/users.json
 
+# schema PostgreSQL tự sinh từ schema.prisma
+/prisma/schema.postgres.prisma
+.schema-path
+
 # vercel
 .vercel
 

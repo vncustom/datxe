@@ -65,7 +65,12 @@ Nguyên tắc: mỗi bước quy trình là 1 bảng riêng do đúng 1 vai trò
   Đội xe điều chỉnh km chuyến đã đóng (ghi `audit_log`). Không kiểm tra chéo thời gian–quãng đường.
 - **M3 — xong**: `/thong-ke` — chọn kỳ (tháng / khoảng ngày / hôm nay); bảng theo lái xe (chuyến, phát sinh, km, giờ chạy, km chưa giải trình) và theo xe (km theo chuyến vs theo công-tơ-mét, chênh lệch); dòng thời gian công-tơ-mét từng xe (tô đỏ chỗ đứt quãng); trang chi tiết từng lái xe; xuất CSV (lái xe / xe); "In / Lưu PDF" qua `@media print`.
 - **M3.1 — xong**: nhắc lái xe có chuyến đang chạy chưa đóng (banner toàn app + trang Chuyến của tôi + Thông báo + badge); `/dieu-xe` đầu trang liệt kê xe đang chạy chưa đóng chuyến (cờ "QUÁ GIỜ"); nút "Biết rồi" ẩn từng cảnh báo km chạy ngoài đơn (`?daxem=1` để xem lại / hiện lại).
-- **M4**: deploy Vercel + Supabase, giao diện mobile cho lái xe.
+- **M4 — sẵn sàng**: 1 lược đồ nguồn (`schema.prisma`), tự sinh `schema.postgres.prisma`
+  cho cloud; `npm run build` tự chọn SQLite/Postgres theo `DATABASE_URL`; script
+  `db:pg:push` / `db:pg:seed`; `viewport` + `manifest.webmanifest` (cài như app trên điện thoại);
+  giao diện co theo màn hình điện thoại (form/nút full-width, nút thao tác lái xe to hơn).
+  Hướng dẫn deploy từng bước: `docs/trien-khai.md`. *(Bước bấm nút deploy do bạn tự làm
+  với tài khoản Vercel/Supabase của mình.)*
 - **M5**: sync daemon (LWW, tombstone, log xung đột, Windows service).
 - **M6**: kiểm thử, chạy song song, đào tạo, nghiệm thu.
 

@@ -51,15 +51,27 @@ Từ chối: `ban_tu_choi` / `doi_xe_tu_choi` (đỏ). Hủy: `huy`. Đơn phát
   `refId`=bookingId chuyến sau); `_actions/alert.ts` (`ackOdoAlertAction` / `unackOdoAlertAction`,
   chỉ Đội xe). `/cong-to-met?daxem=1` xem lại các cảnh báo đã bỏ qua.
 
+## Local vs Cloud (M4)
+
+- Nguồn lược đồ DUY NHẤT: `prisma/schema.prisma` (SQLite). `scripts/pg-schema.mjs` sinh
+  `prisma/schema.postgres.prisma` (chỉ khác khối `datasource`, thêm `directUrl`).
+- `scripts/prisma-generate.mjs` (chạy trong `postinstall` + `build`) tự chọn lược đồ theo
+  `DATABASE_URL`: `postgres://…` → Postgres, còn lại → SQLite. Nhờ vậy `npm run build`
+  dùng chung cho máy local và Vercel.
+- Cloud không dùng migration history — dùng `npm run db:pg:push`. Chi tiết: `docs/trien-khai.md`.
+- `app/manifest.ts` + `viewport`/`themeColor` trong `app/layout.tsx` → cài như app trên điện thoại.
+
 ## Lệnh
 
 ```bash
 npm run dev            # dev server (port 3000)
 npm run import:users   # đọc lại Danh sách_user.xlsx -> prisma/data/users.json (cần Python + openpyxl)
-npm run db:migrate     # prisma migrate dev
+npm run db:migrate     # prisma migrate dev (SQLite local)
 npm run db:seed        # seed 366 user (mật khẩu 123456) + 4 xe
-npm run db:seed:demo   # ~6 đơn mẫu để xem thử luồng (createdBy = __demo__, chạy lại được)
+npm run db:seed:demo   # ~9 đơn mẫu để xem thử luồng (createdBy = __demo__, chạy lại được)
 npm run db:studio      # Prisma Studio
+npm run db:pg:push     # đẩy schema lên Postgres (cần DATABASE_URL/DIRECT_URL trỏ Supabase, cổng 5432)
+npm run db:pg:seed     # seed lên Postgres
 npm run typecheck      # tsc --noEmit
 ```
 

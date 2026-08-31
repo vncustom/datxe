@@ -45,6 +45,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
 
       <div className="flex min-w-0 flex-col">
         <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-line bg-surface/95 px-4 py-2 backdrop-blur">
+          <span className="text-sm font-semibold md:hidden">Đặt xe HTV</span>
           <div className="ml-auto flex items-center gap-3">
             <Link
               href="/thong-bao"

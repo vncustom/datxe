@@ -76,7 +76,7 @@ export function StartTripForm({
       <Messages st={st} />
       <button
         disabled={pending}
-        className="w-fit rounded-md bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
+        className="w-full rounded-md bg-[#2563eb] px-4 py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 sm:w-fit"
       >
         {pending ? "Đang lưu…" : "Bắt đầu chuyến"}
       </button>
@@ -131,7 +131,7 @@ export function EndTripForm({
       <Messages st={st} />
       <button
         disabled={pending}
-        className="w-fit rounded-md bg-[#475569] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
+        className="w-full rounded-md bg-[#475569] px-4 py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 sm:w-fit"
       >
         {pending ? "Đang lưu…" : "Kết thúc & đóng chuyến"}
       </button>

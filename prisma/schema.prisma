@@ -1,7 +1,8 @@
 // Datxe — Hệ thống Đặt xe Công tác HTV
-// Schema dùng cho bản LOCAL (SQLite). Bản CLOUD (PostgreSQL/Supabase) sẽ dùng
-// một datasource block khác ở giai đoạn M4/M5; giữ kiểu dữ liệu trung tính,
-// không dùng enum (SQLite không hỗ trợ) và không dùng native type attribute.
+// Nguồn sự thật DUY NHẤT cho lược đồ. Bản local dùng SQLite (datasource dưới đây);
+// bản cloud dùng PostgreSQL/Supabase qua `prisma/schema.postgres.prisma` (tự sinh
+// bằng `scripts/pg-schema.mjs`, chỉ khác khối datasource).
+// Giữ kiểu dữ liệu trung tính: không enum (SQLite không hỗ trợ), không native type.
 //
 // Quy ước đồng bộ: mọi bảng đồng bộ có id (uuid), updatedAt, updatedBy,
 // originNode ("local" | "cloud"), deletedAt (xoá mềm / tombstone).
