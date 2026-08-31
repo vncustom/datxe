@@ -29,7 +29,15 @@ export async function syncTable(ctx, tbl, batch = 500) {
       const lTs = localCur ? L.tsOf(localCur[col]) : -1;
 
       if (!localCur || cTs > lTs) {
-        if (localCur && !tbl.appendOnly && lTs > pushWmStart && lTs > 0) {
+        // Chỉ tính xung đột khi ĐÃ có mốc đồng bộ trước đó (pushWmStart > 0):
+        // lần đồng bộ đầu tiên chỉ hội tụ dữ liệu, không coi là xung đột.
+        if (
+          localCur &&
+          !tbl.appendOnly &&
+          pushWmStart > 0 &&
+          lTs > pushWmStart &&
+          lTs > 0
+        ) {
           logConflict(tbl.name, remote.id, lTs, cTs, "remote", localCur);
           conflicts++;
         }
@@ -55,7 +63,13 @@ export async function syncTable(ctx, tbl, batch = 500) {
       const rTs = remoteCur ? L.tsOf(remoteCur[col]) : -1;
 
       if (!remoteCur || lTs > rTs) {
-        if (remoteCur && !tbl.appendOnly && rTs > pullWmStart && rTs > 0) {
+        if (
+          remoteCur &&
+          !tbl.appendOnly &&
+          pullWmStart > 0 &&
+          rTs > pullWmStart &&
+          rTs > 0
+        ) {
           logConflict(tbl.name, localRow.id, lTs, rTs, "local", remoteCur);
           conflicts++;
         }
