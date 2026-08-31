@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
+import { idFor } from "../lib/uuid";
 
 const prisma = new PrismaClient();
 
@@ -47,8 +48,9 @@ async function main() {
     };
     await prisma.user.upsert({
       where: { username: u.username },
+      // id tất định (uuidv5 theo username) để local & cloud trùng id.
       // Không ghi đè passwordHash nếu user đã tồn tại (tránh reset khi re-seed).
-      create: { username: u.username, passwordHash, ...fields },
+      create: { id: idFor.user(u.username), username: u.username, passwordHash, ...fields },
       update: fields,
     });
   }
@@ -56,7 +58,7 @@ async function main() {
   for (const v of VEHICLES) {
     await prisma.vehicle.upsert({
       where: { plateNo: v.plateNo },
-      create: v,
+      create: { id: idFor.vehicle(v.plateNo), ...v },
       update: { name: v.name, seats: v.seats },
     });
   }

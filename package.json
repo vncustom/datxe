@@ -15,9 +15,14 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:demo": "tsx scripts/seed-demo.mts",
     "db:verify": "tsx scripts/verify.mts",
+    "db:reset": "prisma migrate reset --force",
     "db:pg:push": "node scripts/pg-schema.mjs && prisma db push --schema prisma/schema.postgres.prisma",
+    "db:pg:reset": "node scripts/pg-schema.mjs && prisma db push --force-reset --schema prisma/schema.postgres.prisma && npm run db:pg:seed",
     "db:pg:seed": "node scripts/pg-schema.mjs && prisma generate --schema prisma/schema.postgres.prisma && tsx prisma/seed.ts",
     "import:users": "python scripts/import_users.py",
+    "sync": "node sync/daemon.mjs",
+    "sync:once": "node sync/daemon.mjs --once",
+    "sync:test": "node scripts/gen-test-schema.mjs && node sync/test/roundtrip.mjs",
     "typecheck": "tsc --noEmit"
   },
   "prisma": {
@@ -28,13 +33,16 @@
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.10",
     "next": "16.3.3",
+    "pg": "^8.23.0",
     "prisma": "6.19.3",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

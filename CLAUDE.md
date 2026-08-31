@@ -44,6 +44,11 @@ Từ chối: `ban_tu_choi` / `doi_xe_tu_choi` (đỏ). Hủy: `huy`. Đơn phát
   công-tơ-mét, tổng hợp số km / km 30 ngày từng xe.
 - `lib/stats.ts` — `parseRange` (query → khoảng ngày), thống kê theo lái xe / xe / dòng thời gian,
   chi tiết chuyến 1 lái xe. Km "chưa giải trình" = gap công-tơ-mét gán cho chuyến sau.
+- **Sync Engine (M5)** — `sync/daemon.mjs` (+ `engine.mjs`, `lib.mjs`, `manifest.mjs`). Dùng
+  `node:sqlite` (built-in) + `pg`, KHÔNG Prisma (2 provider). Đồng bộ 2 chiều theo `id`,
+  LWW theo `updatedAt`/`atTime`, tombstone `deletedAt`, watermark trong `sync_state` (local).
+  `lib/uuid.ts` sinh id tất định cho user/vehicle. `/dong-bo` = trang theo dõi.
+  Test: `npm run sync:test` (pglite in-process). Vận hành: `docs/dong-bo.md`.
 - `@media print` trong `globals.css` ẩn sidebar/header/`.no-print` để in trang thống kê.
 - `lib/bookings.ts#getOpenTrips` — chuyến `dang_chay` chưa đóng (cờ `overdue` nếu quá giờ
   dự kiến hoặc > 12 giờ). Dùng ở `/dieu-xe` (đầu trang) và banner lái xe trong layout.

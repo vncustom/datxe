@@ -22,6 +22,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     nav.push({ href: "/cong-to-met", label: "Công-tơ-mét" });
     nav.push({ href: "/thong-ke", label: "Thống kê" });
   }
+  if (isDoiXe(s) || isAdmin(s)) nav.push({ href: "/dong-bo", label: "Đồng bộ" });
 
   return (
     <div className="min-h-full md:grid md:grid-cols-[15rem_1fr]">
