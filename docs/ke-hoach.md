@@ -76,7 +76,9 @@ Nguyên tắc: mỗi bước quy trình là 1 bảng riêng do đúng 1 vai trò
   vào cả 2 CSDL, watermark ở `sync_state` (local). Seed `users`/`vehicles` dùng id tất định (uuid v5).
   Trang `/dong-bo` theo dõi. `npm run sync` / `sync:once` / `sync:test` (test tích hợp với pglite, 6/6 pass).
   Chạy nền qua Task Scheduler (`sync/run-sync.bat`) hoặc PM2. Chi tiết: `docs/dong-bo.md`.
-- **M6**: kiểm thử, chạy song song, đào tạo, nghiệm thu.
+- **M6 — đang chạy**: `/quan-tri` (quản lý user + xe, bảng chất lượng dữ liệu: đếm tên trùng
+  username, đơn vị thiếu Trưởng/Phó ban); danh sách nghiệm thu `docs/nghiem-thu.md`;
+  hướng dẫn sử dụng theo vai trò. Phần còn lại (chạy song song, đào tạo, nghiệm thu) do bên vận hành.
 
 ## Việc dữ liệu còn lại (file `Danh sách_user.xlsx`)
 

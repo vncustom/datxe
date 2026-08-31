@@ -49,6 +49,9 @@ Từ chối: `ban_tu_choi` / `doi_xe_tu_choi` (đỏ). Hủy: `huy`. Đơn phát
   LWW theo `updatedAt`/`atTime`, tombstone `deletedAt`, watermark trong `sync_state` (local).
   `lib/uuid.ts` sinh id tất định cho user/vehicle. `/dong-bo` = trang theo dõi.
   Test: `npm run sync:test` (pglite in-process). Vận hành: `docs/dong-bo.md`.
+- **Quản trị (M6)** — `/quan-tri` (user) + `/quan-tri/xe` (xe), chỉ `admin`.
+  `_actions/admin.ts`, `lib/data-quality.ts` (đếm tên trùng username / đơn vị thiếu lãnh đạo).
+  User/xe tạo mới dùng id tất định (`idFor`) để đồng bộ. Nghiệm thu: `docs/nghiem-thu.md`.
 - `@media print` trong `globals.css` ẩn sidebar/header/`.no-print` để in trang thống kê.
 - `lib/bookings.ts#getOpenTrips` — chuyến `dang_chay` chưa đóng (cờ `overdue` nếu quá giờ
   dự kiến hoặc > 12 giờ). Dùng ở `/dieu-xe` (đầu trang) và banner lái xe trong layout.
@@ -65,6 +68,8 @@ Từ chối: `ban_tu_choi` / `doi_xe_tu_choi` (đỏ). Hủy: `huy`. Đơn phát
   dùng chung cho máy local và Vercel.
 - Cloud không dùng migration history — dùng `npm run db:pg:push`. Chi tiết: `docs/trien-khai.md`.
 - `app/manifest.ts` + `viewport`/`themeColor` trong `app/layout.tsx` → cài như app trên điện thoại.
+- ⚠ Sau bất kỳ lệnh `db:pg:*` / `sync:test`, client Prisma cục bộ đang trỏ Postgres →
+  `npm run dev` / `npm run build` / `npm run db:generate` tự sinh lại client SQLite theo `DATABASE_URL`.
 
 ## Lệnh
 
